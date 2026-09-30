@@ -117,6 +117,12 @@ export class LottieView extends LottieViewBase {
                         // delay just a bit so that it get received in sync load
                         setTimeout(() => {
                             owner.notify({ eventName: LottieViewBase.compositionLoadedEvent, composition });
+                            // async loads arrive after the autoPlay property
+                            // setter ran — playAnimation() there was a no-op on
+                            // an empty view, so re-trigger on composition arrival.
+                            if (owner.autoPlay && !owner.isAnimating()) {
+                                owner.playAnimation();
+                            }
                         }, 0);
                     }
                 }
