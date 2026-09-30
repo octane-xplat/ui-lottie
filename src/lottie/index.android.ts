@@ -233,7 +233,7 @@ export class LottieView extends LottieViewBase {
 
     [srcProperty.setNative](src: string) {
         try {
-            if (LottieCompositionFactory) {
+            if (!LottieCompositionFactory) {
                 LottieCompositionFactory = com.airbnb.lottie.LottieCompositionFactory;
             }
             const view = this.nativeViewProtected;
@@ -245,7 +245,7 @@ export class LottieView extends LottieViewBase {
                 if (this.async) {
                     view.setAnimationFromJson(src, null);
                 } else {
-                    result = LottieCompositionFactory.fromJsonStringSync(this._context, src);
+                    result = LottieCompositionFactory.fromJsonStringSync(src, null);
                 }
             } else if (src.startsWith(Utils.RESOURCE_PREFIX)) {
                 const resName = src.replace(Utils.RESOURCE_PREFIX, '');
@@ -278,7 +278,7 @@ export class LottieView extends LottieViewBase {
                             }
                         });
                     } else {
-                        result = LottieCompositionFactory.fromJsonStringSync(this._context, loadLottieJSONSync(src));
+                        result = LottieCompositionFactory.fromJsonStringSync(loadLottieJSONSync(src), null);
                     }
                 }
             }
