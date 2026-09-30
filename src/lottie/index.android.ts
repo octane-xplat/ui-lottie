@@ -305,7 +305,33 @@ export class LottieView extends LottieViewBase {
                         result = com.airbnb.lottie.LottieCompositionFactory.fromAssetSync(this._context, src);
                     }
                 } else {
-                    if (this.async) {
+                    const filePath = src.startsWith('file:') ? src.substring('file:'.length) : src;
+                    if (/\.(zip|lottie)$/i.test(filePath)) {
+                        // Binary containers can't survive File.readText — hand
+                        // a ZipInputStream to the factory instead.
+                        const stream = new java.util.zip.ZipInputStream(new java.io.FileInputStream(filePath));
+                        if (this.async) {
+                            const owner = new WeakRef(this);
+                            com.airbnb.lottie.LottieCompositionFactory.fromZipStream(stream, null)
+                                .addListener(
+                                    new com.airbnb.lottie.LottieListener<com.airbnb.lottie.LottieComposition>({
+                                        onResult: (composition) => {
+                                            const view = owner.get()?.nativeViewProtected;
+                                            if (view) {
+                                                view.setComposition(composition);
+                                            }
+                                        }
+                                    })
+                                )
+                                .addFailureListener(
+                                    new com.airbnb.lottie.LottieListener<java.lang.Throwable>({
+                                        onResult: (error) => console.error(error)
+                                    })
+                                );
+                        } else {
+                            result = com.airbnb.lottie.LottieCompositionFactory.fromZipStreamSync(stream, null);
+                        }
+                    } else if (this.async) {
                         loadLottieJSON(src).then((result) => {
                             if (this.nativeViewProtected) {
                                 this.nativeViewProtected.setAnimationFromJson(result, null);
