@@ -9,6 +9,8 @@ import { CoreTypes, Property, View, booleanConverter } from '@nativescript/core'
 import { KeyPathColors } from '.';
 
 export class LottieViewBase extends View {
+    public static compositionLoadedEvent = 'compositionLoaded';
+    public static loadFailedEvent = 'loadFailed';
     public stretch: CoreTypes.ImageStretchType;
     public async: boolean;
     public src: string;

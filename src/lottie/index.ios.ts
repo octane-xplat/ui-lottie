@@ -39,37 +39,59 @@ export class LottieView extends LottieViewBase {
     }
 
     [srcProperty.setNative](src: string) {
-        if (!src) {
-            this.nativeViewProtected.compatibleAnimation = null;
-        } else if (src[0] === '{') {
-            this.nativeViewProtected.compatibleAnimation = CompatibleAnimation.alloc().initWithJson(src);
-        } else if (src.startsWith(Utils.RESOURCE_PREFIX)) {
-            const resName = src.replace(Utils.RESOURCE_PREFIX, '');
+        try {
+            if (!src) {
+                this.nativeViewProtected.compatibleAnimation = null;
+            } else if (src[0] === '{') {
+                this.nativeViewProtected.compatibleAnimation = CompatibleAnimation.alloc().initWithJson(src);
+            } else if (src.startsWith(Utils.RESOURCE_PREFIX)) {
+                const resName = src.replace(Utils.RESOURCE_PREFIX, '');
 
-            this.nativeViewProtected.compatibleAnimation = CompatibleAnimation.alloc().initWithNameBundle(resName.replace('.json', '').replace('.lottie', ''), NSBundle.mainBundle);
-        } else {
-            if (src[0] === '~') {
-                src = `${path.join(appPath, src.substring(2))}`;
-            }
-            if (!/.(json|zip|lottie)$/.test(src)) {
-                src += '.json';
-            }
-            if (!src.startsWith('file:/') && src[0] !== '/') {
-                // seen as res
-                this.nativeViewProtected.compatibleAnimation = CompatibleAnimation.alloc().initWithNameSubdirectoryBundle(src.replace('.json', '').replace('.lottie', ''), null, NSBundle.mainBundle);
+                this.nativeViewProtected.compatibleAnimation = CompatibleAnimation.alloc().initWithNameBundle(resName.replace('.json', '').replace('.lottie', ''), NSBundle.mainBundle);
             } else {
-                this.nativeViewProtected.compatibleAnimation = CompatibleAnimation.alloc().initWithFilepath(src);
+                if (src[0] === '~') {
+                    src = `${path.join(appPath, src.substring(2))}`;
+                }
+                if (!/.(json|zip|lottie)$/.test(src)) {
+                    src += '.json';
+                }
+                if (!src.startsWith('file:/') && src[0] !== '/') {
+                    // seen as res
+                    this.nativeViewProtected.compatibleAnimation = CompatibleAnimation.alloc().initWithNameSubdirectoryBundle(src.replace('.json', '').replace('.lottie', ''), null, NSBundle.mainBundle);
+                } else {
+                    this.nativeViewProtected.compatibleAnimation = CompatibleAnimation.alloc().initWithFilepath(src);
+                }
             }
-        }
-        if (this.keyPathColors) {
-            this[keyPathColorsProperty.setNative](this.keyPathColors);
-        }
-        if (this._imageSourceAffectsLayout) {
-            this.requestLayout();
-        }
+            if (this.keyPathColors) {
+                this[keyPathColorsProperty.setNative](this.keyPathColors);
+            }
+            if (this._imageSourceAffectsLayout) {
+                this.requestLayout();
+            }
 
-        if (this.autoPlay && !this.isAnimating()) {
-            this.playAnimation();
+            if (this.autoPlay && !this.isAnimating()) {
+                this.playAnimation();
+            }
+
+            if (src) {
+                // CompatibleAnimation resolves synchronously (the bundled
+                // lottie-ios fork overrides the main-thread logger assert so
+                // .lottie decodes inline too). Notify deferred, matching the
+                // Android event shape and letting listeners attached around
+                // the src assignment still fire. A nil `animation` means the
+                // parse failed — the compat init does not throw.
+                const view = this.nativeViewProtected;
+                setTimeout(() => {
+                    if (!view || !view.animation) {
+                        this.notify({ eventName: LottieViewBase.loadFailedEvent, error: src });
+                    } else {
+                        this.notify({ eventName: LottieViewBase.compositionLoadedEvent, composition: view.animation });
+                    }
+                }, 0);
+            }
+        } catch (error) {
+            console.error(error);
+            this.notify({ eventName: LottieViewBase.loadFailedEvent, error });
         }
     }
 

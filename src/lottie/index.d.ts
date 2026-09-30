@@ -12,6 +12,17 @@ export interface KeyPathColors {
 
 export class LottieView extends View {
     /**
+     * The composition finished loading. `event.composition` is the native
+     * composition object.
+     */
+    static compositionLoadedEvent: string;
+
+    /**
+     * The src failed to load or parse. `event.error` carries the failure.
+     */
+    static loadFailedEvent: string;
+
+    /**
      * LottieAnimationView
      */
     readonly android: any;
