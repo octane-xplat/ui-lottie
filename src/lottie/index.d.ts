@@ -72,6 +72,16 @@ export class LottieView extends View {
     cancelAnimation(): void;
 
     /**
+     * Pauses the animation, keeping the current progress.
+     */
+    pauseAnimation(): void;
+
+    /**
+     * Resumes the animation from where it was paused.
+     */
+    resumeAnimation(): void;
+
+    /**
      * Returns true if the view is currently animating.
      */
     isAnimating(): boolean;
