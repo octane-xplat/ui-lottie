@@ -116,13 +116,24 @@ export class LottieView extends LottieViewBase {
                     if (owner) {
                         // delay just a bit so that it get received in sync load
                         setTimeout(() => {
-                            this.notify({ eventName: 'compositionLoaded', composition });
+                            owner.notify({ eventName: LottieViewBase.compositionLoadedEvent, composition });
                         }, 0);
                     }
                 }
             });
         }
         this.nativeViewProtected.addLottieOnCompositionLoadedListener(this.loadedListener);
+        const that = new WeakRef(this);
+        this.nativeViewProtected.setFailureListener(
+            new com.airbnb.lottie.LottieListener<java.lang.Throwable>({
+                onResult: (result) => {
+                    const owner = that?.get();
+                    if (owner) {
+                        owner.notify({ eventName: LottieViewBase.loadFailedEvent, error: result });
+                    }
+                }
+            })
+        );
     }
 
     public disposeNativeView(): void {
@@ -305,6 +316,7 @@ export class LottieView extends LottieViewBase {
             if (result) {
                 if (result.getException()) {
                     console.error(result.getException());
+                    this.notify({ eventName: LottieViewBase.loadFailedEvent, error: result.getException() });
                     // view.setComposition(null);
                 } else {
                     view.setComposition(result.getValue());
@@ -321,6 +333,7 @@ export class LottieView extends LottieViewBase {
             }
         } catch (error) {
             console.error(error);
+            this.notify({ eventName: LottieViewBase.loadFailedEvent, error });
         }
     }
 
