@@ -56,6 +56,7 @@ export class LottieView extends LottieViewBase {
     animatorListener: android.animation.Animator.AnimatorListener;
     loadedListener: com.airbnb.lottie.LottieOnCompositionLoadedListener;
     _completionBlock;
+    _cancelled = false;
     //@ts-ignore
     get completionBlock() {
         return this._completionBlock;
@@ -67,15 +68,22 @@ export class LottieView extends LottieViewBase {
                 const that = new WeakRef(this);
                 this.animatorListener = new android.animation.Animator.AnimatorListener({
                     onAnimationCancel: (_animator) => {
+                        // ValueAnimator.cancel() fires onAnimationCancel AND then
+                        // onAnimationEnd — report once, in onAnimationEnd, with the
+                        // correct finished flag (matching iOS, where pause()/stop()
+                        // invoke the completion block a single time with false).
                         const owner = that?.get();
-                        if (owner?._completionBlock) {
-                            owner._completionBlock(false);
+                        if (owner) {
+                            owner._cancelled = true;
                         }
                     },
                     onAnimationEnd: (_animator) => {
                         const owner = that?.get();
                         if (owner?._completionBlock) {
-                            owner._completionBlock(true);
+                            owner._completionBlock(!owner._cancelled);
+                        }
+                        if (owner) {
+                            owner._cancelled = false;
                         }
                     },
                     onAnimationRepeat: (_animator) => {
