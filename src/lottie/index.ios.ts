@@ -102,12 +102,16 @@ export class LottieView extends LottieViewBase {
     }
 
     public setOpacity(value: number, keyPath: string[]): void {
-        if (this.nativeView && value && keyPath && keyPath.length) {
+        if (this.nativeView && value != null && keyPath && keyPath.length) {
+            keyPath = [...keyPath];
             if (keyPath[keyPath.length - 1].toLowerCase() !== 'opacity') {
                 keyPath.push('Opacity'); // ios expects the property as the last item in the keyPath
             }
 
-            this.nativeViewProtected.setFloatValueForKeypath(value, CompatibleAnimationKeypath.alloc().initWithKeypath(keyPath.join('.')));
+            // Opacity float values are on a 0–100 scale in lottie-ios
+            // (After Effects percent), matching the Android setter's input
+            // contract of a 0–1 fraction.
+            this.nativeViewProtected.setFloatValueForKeypath(clamp(value) * 100, CompatibleAnimationKeypath.alloc().initWithKeypath(keyPath.join('.')));
         }
         // TODO: not working
         // if (this.nativeView && value && keyPath && keyPath.length) {

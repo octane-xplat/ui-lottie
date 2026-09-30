@@ -165,9 +165,10 @@ export class LottieView extends LottieViewBase {
     }
 
     public setOpacity(value: number, keyPath: string[]): void {
-        if (this.nativeViewProtected && value && keyPath && keyPath.length) {
+        if (this.nativeViewProtected && value != null && keyPath && keyPath.length) {
             if (keyPath[keyPath.length - 1].toLowerCase() === 'opacity') {
-                keyPath.pop();
+                keyPath = [...keyPath];
+                keyPath.pop(); // android specifies the property as an enum parameter.
                 if (keyPath.length === 0) {
                     return;
                 }
@@ -187,7 +188,9 @@ export class LottieView extends LottieViewBase {
             if (!LottieKeyPath) {
                 LottieKeyPath = com.airbnb.lottie.model.KeyPath;
             }
-            this.nativeViewProtected.addValueCallback(new LottieKeyPath(nativeKeyPath as any), LottieProperty.OPACITY, new LottieValueCallback(new java.lang.Integer(value * 100)));
+            // LottieProperty.OPACITY is an Integer on a 0–255 scale (matching
+            // Paint#setAlpha), not a 0–100 percentage.
+            this.nativeViewProtected.addValueCallback(new LottieKeyPath(nativeKeyPath as any), LottieProperty.OPACITY, new LottieValueCallback(new java.lang.Integer(value * 255)));
         }
     }
 
