@@ -5,7 +5,7 @@
  * Version 1.0.0                                           walkerrunpdx@gmail.com
  **********************************************************************************/
 
-import { Color, Utils, View, knownFolders, path } from '@nativescript/core';
+import { Color, Http, Utils, View, knownFolders, path } from '@nativescript/core';
 import { LottieViewBase, autoPlayProperty, keyPathColorsProperty, loopProperty, progressProperty, srcProperty, stretchProperty } from './index.common';
 import { clamp } from './utils';
 
@@ -48,6 +48,20 @@ export class LottieView extends LottieViewBase {
                 const resName = src.replace(Utils.RESOURCE_PREFIX, '');
 
                 this.nativeViewProtected.compatibleAnimation = CompatibleAnimation.alloc().initWithNameBundle(resName.replace('.json', '').replace('.lottie', ''), NSBundle.mainBundle);
+            } else if (/^https?:/i.test(src)) {
+                // Remote URL — download to a temp file and re-enter as a local
+                // path (initWithUrl exists only as a view initializer, so it
+                // can't be applied to an already-created view).
+                const match = /\.(zip|lottie|json)(?=[?#]|$)/i.exec(src);
+                const dest = path.join(knownFolders.temp().path, `lottie-${Date.now()}${match ? match[0].toLowerCase() : '.json'}`);
+                Http.getFile(src, dest)
+                    .then(() => {
+                        this.src = dest;
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        this.notify({ eventName: 'loadFailed', error });
+                    });
             } else {
                 if (src[0] === '~') {
                     src = `${path.join(appPath, src.substring(2))}`;
