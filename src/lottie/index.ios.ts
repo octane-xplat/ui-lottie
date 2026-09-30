@@ -156,6 +156,19 @@ export class LottieView extends LottieViewBase {
         }
     }
 
+    public pauseAnimation(): void {
+        if (this.nativeViewProtected) {
+            this.nativeViewProtected.pause();
+        }
+    }
+
+    public resumeAnimation(): void {
+        if (this.nativeViewProtected) {
+            // play() with no fromProgress resumes from currentProgress
+            this.nativeViewProtected.play();
+        }
+    }
+
     public isAnimating(): boolean {
         return this.nativeView ? this.nativeViewProtected.isAnimationPlaying : false;
     }
