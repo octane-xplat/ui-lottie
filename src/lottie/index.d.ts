@@ -60,7 +60,9 @@ export class LottieView extends View {
     speed: number | undefined;
 
     /**
-     * The current source of the animation.
+     * The current source of the animation. Accepts inline JSON (string
+     * starting with '{'), res:// resource names, ~/ app paths, absolute
+     * file paths, and http(s) URLs (downloaded to a temp file).
      */
     src: string | undefined;
 

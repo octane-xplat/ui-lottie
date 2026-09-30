@@ -5,7 +5,7 @@
  * Version 1.0.0                                           bradwaynemartin@gmail.com
  **********************************************************************************/
 
-import { Color, File, Utils } from '@nativescript/core';
+import { Color, File, Http, Utils, knownFolders, path } from '@nativescript/core';
 import { LottieViewBase, autoPlayProperty, keyPathColorsProperty, loopProperty, progressProperty, renderModeProperty, srcProperty, stretchProperty } from './index.common';
 import { clamp } from './utils';
 
@@ -247,6 +247,21 @@ export class LottieView extends LottieViewBase {
                 } else {
                     result = LottieCompositionFactory.fromJsonStringSync(this._context, src);
                 }
+            } else if (/^https?:/i.test(src)) {
+                // Remote URL — download to a temp file and re-enter as a
+                // local path. (Android could use LottieCompositionFactory.
+                // fromUrl, but the download path works identically on iOS
+                // and flows failures through loadFailed.)
+                const match = /\.(zip|lottie|json)(?=[?#]|$)/i.exec(src);
+                const dest = path.join(knownFolders.temp().path, `lottie-${Date.now()}${match ? match[0].toLowerCase() : '.json'}`);
+                Http.getFile(src, dest)
+                    .then(() => {
+                        this.src = dest;
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        this.notify({ eventName: 'loadFailed', error });
+                    });
             } else if (src.startsWith(Utils.RESOURCE_PREFIX)) {
                 const resName = src.replace(Utils.RESOURCE_PREFIX, '');
                 if (this.async) {
