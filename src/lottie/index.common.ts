@@ -5,16 +5,27 @@
  * Version 1.0.0                                           walkerrunpdx@gmail.com
  **********************************************************************************/
 
+// Vendored from @nativescript-community/ui-lottie (MIT), fork branch
+// xplat-fixes on octane-xplat/ui-lottie — device-probed fixes for dead
+// sync-src, missing events/pause-resume, URL/.lottie sources, async
+// autoPlay, completion dedupe, opacity scale, Podfile pin.
+// @ts-nocheck — vendored upstream code, not strict-clean. Kept
+// close to the fork so fix branches stay PR-able; divergences are
+// commented inline.
 import { CoreTypes, Property, View, booleanConverter } from '@nativescript/core';
-import { KeyPathColors } from '.';
+// KeyPathColors lives here — upstream's `from '.'` self-import
+// doesn't resolve in a vendored layout.
+export interface KeyPathColors {
+    [k: string]: Color | string;
+}
 
 export class LottieViewBase extends View {
     public static compositionLoadedEvent = 'compositionLoaded';
     public static loadFailedEvent = 'loadFailed';
     // `declare`, not plain fields — under useDefineForClassFields (esbuild/
-    // rolldown, es2022+ targets) plain declarations emit own-instance fields
-    // that shadow the Property accessors register() installs, silently
-    // breaking every property set. tsc emit never surfaced this.
+    // rolldown, es2022+) plain declarations emit instance fields that shadow
+    // the Property accessors register() installs, silently breaking every
+    // property set. Upstream's tsc emit never hit this; vendored fork fix.
     public declare stretch: CoreTypes.ImageStretchType;
     public declare async: boolean;
     public declare src: string;

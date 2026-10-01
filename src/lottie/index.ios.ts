@@ -5,6 +5,13 @@
  * Version 1.0.0                                           walkerrunpdx@gmail.com
  **********************************************************************************/
 
+// Vendored from @nativescript-community/ui-lottie (MIT), fork branch
+// xplat-fixes on octane-xplat/ui-lottie — device-probed fixes for dead
+// sync-src, missing events/pause-resume, URL/.lottie sources, async
+// autoPlay, completion dedupe, opacity scale, Podfile pin.
+// @ts-nocheck — vendored upstream code, not strict-clean; kept
+// diff-identical to the fork so fix branches stay PR-able.
+/// <reference path="./typings/ios.d.ts" />
 import { Color, Http, Utils, View, knownFolders, path } from '@nativescript/core';
 import { LottieViewBase, autoPlayProperty, keyPathColorsProperty, loopProperty, progressProperty, srcProperty, stretchProperty } from './index.common';
 import { clamp } from './utils';
