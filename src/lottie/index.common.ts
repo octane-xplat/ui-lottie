@@ -11,14 +11,18 @@ import { KeyPathColors } from '.';
 export class LottieViewBase extends View {
     public static compositionLoadedEvent = 'compositionLoaded';
     public static loadFailedEvent = 'loadFailed';
-    public stretch: CoreTypes.ImageStretchType;
-    public async: boolean;
-    public src: string;
-    public loop: boolean;
-    public autoPlay: boolean;
-    public progress: number;
-    public keyPathColors: KeyPathColors;
-    public completionBlock: (animationFinished: boolean) => void;
+    // `declare`, not plain fields — under useDefineForClassFields (esbuild/
+    // rolldown, es2022+ targets) plain declarations emit own-instance fields
+    // that shadow the Property accessors register() installs, silently
+    // breaking every property set. tsc emit never surfaced this.
+    public declare stretch: CoreTypes.ImageStretchType;
+    public declare async: boolean;
+    public declare src: string;
+    public declare loop: boolean;
+    public declare autoPlay: boolean;
+    public declare progress: number;
+    public declare keyPathColors: KeyPathColors;
+    public declare completionBlock: (animationFinished: boolean) => void;
 }
 
 export const srcProperty = new Property<LottieViewBase, string>({
