@@ -1,15 +1,19 @@
 {
-    "extends": "./tools/tsconfig",
+    // Vendored-consumption variant (xplat-vendored): upstream extends
+    // ./tools/tsconfig from its tools submodule, which vendored consumers
+    // never init — rolldown/esbuild resolve the nearest tsconfig.json for
+    // transform semantics and fail on the missing extend. Self-contained.
     "compilerOptions": {
+        "target": "es2020",
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "useDefineForClassFields": false,
+        "experimentalDecorators": true,
+        "skipLibCheck": true,
+        "noEmit": true,
         "paths": {
             "@nativescript-community/ui-lottie": ["src/lottie/index"],
             "@nativescript-community/ui-lottie/*": ["src/lottie/*"]
         }
-    },
-    "references": [
-        {
-            //Need for IDE
-            "path": "./tsconfig.vue3.json"
-        }
-    ]
+    }
 }
