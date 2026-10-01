@@ -73,19 +73,23 @@ export class LottieView extends LottieViewBase {
                 this.playAnimation();
             }
 
-            if (src) {
-                // CompatibleAnimation resolves synchronously (the bundled
-                // lottie-ios fork overrides the main-thread logger assert so
-                // .lottie decodes inline too). Notify deferred, matching the
-                // Android event shape and letting listeners attached around
-                // the src assignment still fire. A nil `animation` means the
-                // parse failed — the compat init does not throw.
+            if (src && !/^https?:/i.test(src)) {
+                // CompatibleAnimation decodes synchronously when assigned (the
+                // bundled lottie-ios fork overrides the main-thread logger
+                // assert so .lottie decodes inline too). Notify deferred,
+                // matching the Android event shape and letting listeners
+                // attached around the src assignment still fire. Success is
+                // animationDuration >= 0 — `compatibleAnimation`'s didSet
+                // writes `animationView.animation` without touching the view's
+                // own `animation` property, so `view.animation` stays nil and
+                // can't be used as the signal. `animationDuration` is -1 only
+                // when nothing decoded.
                 const view = this.nativeViewProtected;
                 setTimeout(() => {
-                    if (!view || !view.animation) {
-                        this.notify({ eventName: LottieViewBase.loadFailedEvent, error: src });
+                    if (view && view.compatibleAnimation && view.animationDuration >= 0) {
+                        this.notify({ eventName: LottieViewBase.compositionLoadedEvent, composition: view.compatibleAnimation });
                     } else {
-                        this.notify({ eventName: LottieViewBase.compositionLoadedEvent, composition: view.animation });
+                        this.notify({ eventName: LottieViewBase.loadFailedEvent, error: src });
                     }
                 }, 0);
             }
