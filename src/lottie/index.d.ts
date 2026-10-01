@@ -61,6 +61,18 @@ export class LottieView extends View {
     loop: boolean;
 
     /**
+     * Load the source asynchronously instead of blocking the main thread
+     * (Android only — iOS always resolves synchronously).
+     */
+    async: boolean;
+
+    /**
+     * How the animation scales inside the view's bounds — NativeScript's
+     * ImageStretchType ('none' | 'fill' | 'aspectFit' | 'aspectFill').
+     */
+    stretch: string;
+
+    /**
      * The current progress of the animation.
      */
     progress: number | undefined;
